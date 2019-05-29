@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_exit_hint">再按一次退出程序</string>
+    <string name="title_activity_fragment_module">Fragment组件化</string>
+    <string name="title_home">news</string>
+    <string name="title_dashboard">girls</string>
+    <string name="title_notifications">预留</string>
+
+</resources>

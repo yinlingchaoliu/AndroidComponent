@@ -1,0 +1,9 @@
+apply plugin: 'groovy'
+
+dependencies {
+    compile 'com.android.tools.build:gradle:3.2.0'
+    //gradle sdk
+    compile gradleApi()
+    //groovy sdk
+    compile localGroovy()
+}

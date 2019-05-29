@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.chaoliu.thor.core" >
+
+    <application>
+        <service android:name="com.chaoliu.thor.service.InitializeService" />
+    </application>
+</manifest>

@@ -1,0 +1,19 @@
+include ':lib_common',
+        ':module_app',
+        ':module_main',
+        ':module_girls',
+        ':module_news'
+
+include ':common:lib_http',
+        ':common:lib_util',
+        ':common:lib_glide',
+        ':common:lib_base',
+        ':common:lib_widget'
+
+//诸神黄昏
+include ':component:thor_alone_gradle_plugin',//解耦插件
+        ':component:thor',//核心框架
+        ':component:weixinApi'//去".api"插件
+
+//api testmodule
+include ':module_api'

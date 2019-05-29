@@ -1,0 +1,20 @@
+apply plugin: 'groovy'
+
+dependencies {
+    compile 'com.android.tools.build:gradle:3.2.0'
+    //gradle sdk
+    compile gradleApi()
+    //groovy sdk
+    compile localGroovy()
+}
+
+ext {
+    bintrayName = 'weixinApi'
+    artifact = bintrayName
+    libraryName = bintrayName
+    libraryDescription = 'A weixinApi Plugin for android component Make you efficient'
+    libraryVersion = "0.0.1"
+}
+
+apply from: '../../install.gradle'
+apply from: '../../bintray.gradle'
