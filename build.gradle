@@ -5,6 +5,7 @@ buildscript {
     addRepos(repositories)
     dependencies {
         classpath fileTree(dir: 'plugins', include: ['*.jar'])
+        classpath 'com.chaoliu:weixinApi:1.0.0'
         /* classpath deps.android_gradle_plugin*/
         classpath deps.android_gradle_plugin
         classpath deps.kotlin.plugin
