@@ -13,7 +13,7 @@ ext {
     artifact = bintrayName
     libraryName = bintrayName
     libraryDescription = 'A weixinApi Plugin for android component Make you efficient'
-    libraryVersion = "0.0.1"
+    libraryVersion = "1.0.0"
 }
 
 apply from: '../../install.gradle'

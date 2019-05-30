@@ -45,4 +45,3 @@ task clean(type: Delete) {
 }
 
 apply plugin: 'weixinApi'
-

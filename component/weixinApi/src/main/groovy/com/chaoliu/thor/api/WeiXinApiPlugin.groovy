@@ -23,11 +23,13 @@ public class WeiXinApiPlugin implements Plugin<Project> {
 
     private static final String API_MODULE = "ApiModule"
     private static final String GROUP_ID = "weixinapi"
+    private static final String IS_RUN_ALWAYS="isRunAlways"
 
     private String moduleName
     private AssembleTask assembleTask
     private Project mProject
     private boolean isDebug = true
+    private boolean isRunAlways = true
 
     void apply(Project project) {
         this.mProject = project
@@ -51,13 +53,16 @@ public class WeiXinApiPlugin implements Plugin<Project> {
         addApiModuleTask(project)
 
         //在项目配置好，初始化之前执行
-        project.beforeEvaluate {
-            //清空所有文件
-            deleteApiModule()
-            //拷贝api文件
-            copyApiModule()
-            //删除空文件夹
-            clearApiModuleEmptyDir()
+        project.afterEvaluate {
+            //如果项目是状态是isRunAlways=true 且 当前task不是ApiModule执行，避免重复执行
+            if (getIsRunAlway(project) && isNotEqualTask(project, API_MODULE)){
+                //清空所有文件
+                deleteApiModule()
+                //拷贝api文件
+                copyApiModule()
+                //删除空文件夹
+                clearApiModuleEmptyDir()
+            }
         }
 
     }
@@ -110,6 +115,15 @@ public class WeiXinApiPlugin implements Plugin<Project> {
         return Utils.trimAll(moduleName)
     }
 
+    private Boolean getIsRunAlway(Project project) {
+        //1.没有IS_RUN_ALWAYS 默认为true
+        if (!project.rootProject.hasProperty(IS_RUN_ALWAYS)) {
+            log("if not set ${IS_RUN_ALWAYS} in the root properties, default value is true!!!")
+            return true
+        }
+        return Boolean.parseBoolean(project.rootProject.properties.get(IS_RUN_ALWAYS))
+    }
+
     //实体类
     private class AssembleTask {
         boolean isAssemble = false
@@ -142,6 +156,22 @@ public class WeiXinApiPlugin implements Plugin<Project> {
         return assembleTask
     }
 
+    //当前运行任务是不是指定task
+    private boolean isEqualTask(Project project, String taskName) {
+        List<String> taskNames = project.gradle.startParameter.taskNames
+        String TASK_NAME = taskName.toUpperCase()
+        for (String task : taskNames) {
+            if (task.toUpperCase().contains(TASK_NAME)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private boolean isNotEqualTask(Project project, String taskName){
+        return !isEqualTask(project,taskName)
+    }
+
     //添加扩展方法
     private void addComponent(String dependenciesName) {
         if (assembleTask.isAssemble) {
@@ -153,7 +183,6 @@ public class WeiXinApiPlugin implements Plugin<Project> {
     private void addDependencies(Project project, String dependenciesName) {
         def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
         dependenciesName = Utils.trimAll(dependenciesName)
-        log("addDependencies: trimAll" + dependenciesName)
         if (dependenciesName.startsWith(':')) { //project
             log("addDependencies: project" + dependenciesName)
             //读取根目录下的
@@ -167,57 +196,47 @@ public class WeiXinApiPlugin implements Plugin<Project> {
 
     private void addApiModuleTask(Project project) {
 
-        //创建task
-        project.task("delete$API_MODULE", group: GROUP_ID, description: "删除$API_MODULE" + "文件") {
+        project.tasks.create(name:"weiXin${API_MODULE}") {
+            setGroup(GROUP_ID)
+            setDescription("weixinApi一键执行")
+        }.doFirst {
             deleteApiModule()
-        }
-
-        project.task("copy$API_MODULE", group: GROUP_ID, description: "拷贝$API_MODULE") {
             copyApiModule()
-        }
-
-        project.task("clear$API_MODULE" + "EmptyDir", group: GROUP_ID, description: "清理$API_MODULE" + "空文件夹") {
             clearApiModuleEmptyDir()
         }
 
-        //跳过
-        project.gradle.taskGraph.whenReady { taskGraph ->
-            taskGraph.allTasks.each { task ->
-                if (task.name.contains(API_MODULE)) {
-                    task.enabled = false
-                }
-            }
-        }
+//        //跳过
+//        project.rootProject.gradle.taskGraph.whenReady { taskGraph ->
+//            taskGraph.allTasks.each { task ->
+//                if (task.name.contains(API_MODULE)) {
+//                    task.enabled = false
+//                }
+//            }
+//        }
     }
 
     //删除ApiModule文件
     private void deleteApiModule() {
         String filePath = Utils.getModuleJavaPath(mProject, moduleName)
         mProject.delete filePath
-        log("delete api module files:" + filePath)
+        log("delete ${API_MODULE}")
     }
 
     //拷贝至ApiModule
     private void copyApiModule() {
+        log("copyto ${API_MODULE}")
 
         mProject.copy {
 
             //遍历所有项目 将api文件
             for (Project project : mProject.rootProject.getAllprojects()) {
                 String currentProjectPath = Utils.getProjectJavaPath(project)
-                log("copy from:" + currentProjectPath)
                 from(currentProjectPath) {
                     include '**/**.api'
                 }
             }
 
             String apiModulePath = Utils.getModuleJavaPath(mProject, moduleName)
-
-            divideLog()
-
-            log("copy into:" + apiModulePath)
-
-            divideLog()
 
             into(apiModulePath)
 
@@ -236,7 +255,7 @@ public class WeiXinApiPlugin implements Plugin<Project> {
     private void clearApiModuleEmptyDir() {
         String filePath = Utils.getModuleJavaPath(mProject, moduleName)
         Utils.clearEmptyDir(new File(filePath))
-        log("clear empty dir pathDir:" + filePath)
+        log("clear  ${API_MODULE}")
     }
 
     /**
@@ -248,7 +267,4 @@ public class WeiXinApiPlugin implements Plugin<Project> {
         if (isDebug) System.out.println('weixinApi:' + msg)
     }
 
-    private divideLog(){
-        log("============================================================================")
-    }
 }

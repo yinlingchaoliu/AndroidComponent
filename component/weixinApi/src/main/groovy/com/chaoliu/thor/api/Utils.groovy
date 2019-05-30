@@ -54,8 +54,9 @@ public class Utils {
             }
         }
 
-        if (dir.isDirectory() && dir.delete())
-            println('weixinApi:文件夹' + dir.path + "清理成功")
+        if (dir.isDirectory()){
+             dir.delete()
+        }
     }
 
 }
